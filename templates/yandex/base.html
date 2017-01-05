@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    	<link href="{% static 'yandex/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    	<link href="{% static 'yandex/bootstrap/css/bootstrap-theme.min.css' %}" rel="stylesheet">
+
+{#    	<link href="{% static 'yandex/css/jq.css' %}" rel="stylesheet">#}
+    	<link href="{% static 'yandex/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    	<link href="{% static 'yandex/css/theme.blue.css' %}" rel="stylesheet">
+        <script src="{% static 'yandex/js/jquery-latest.min.js' %}"></script>
+
+        <script src="{% static 'yandex/js/jquery.dataTables.min.js' %}"></script>
+        <script src="{% static 'yandex/js/dataTables.bootstrap.min.js' %}"></script>
+
+    <title>Администрирование Yandex почты для домена</title>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#example').DataTable();
+
+        });
+        $(function () {
+                var forward = $("id_is_forward").checked == false;
+                if (forward == false) {
+                    document.getElementById("id_email_forward").disabled = true;
+                    document.getElementById("id_is_copy").disabled = true;
+                }
+            });
+
+            // Get Token
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            } //Get Token
+
+
+            $('#add_email').on('shown.bs.modal', function () {
+                $('#myInput').focus()
+            });
+
+            function Delete_email(is_delete) {
+                var login = is_delete.rel;
+                var link = '/delete_user/' + login;
+                document.getElementById('log').innerHTML = login;
+                document.getElementById('modal-footer').innerHTML = '' +
+                    '<button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>' +
+                    '<a href="' + link + '" class="btn btn-primary" id="del">Удалить</a>'
+            }
+
+            function SetForward(set_forward) {
+
+                var login = set_forward.rel;
+                var link = '/set_forward/' + login;
+                document.SetForw.action = get_action();
+                document.getElementById('login_forward').innerHTML = login;
+                document.getElementById('modal-footer-forward').innerHTML = '' +
+                    '<button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>' +
+                    '<button type="submit" class="btn btn-primary" data-toggle="form" data-target="#set_forward_form">Создать</button>';
+
+                function get_action() {
+                    return link
+                }
+            }
+
+            function DelForward(del_forward) {
+                var filter = del_forward.rel;
+                console.log(filter);
+                {#            for (var i = filter.length - 1; i >= 0; i--) {#}
+                {#                $("#id_em").append('<option value="'+ filter[i].split("'")[1] +'">'+filter[i].split("'")[1] +'</option>');#}
+                {#                console.log(filter[i].split("'")[1])#}
+                {#            }#}
+                document.getElementById('modal-footer-delforward').innerHTML = '' +
+                    '<button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>' +
+                    '<button type="submit"  onclick="" class="btn btn-primary" data-toggle="form" data-target="#del_forward_form">Удалить</button>';
+            }
+
+            function CheckForward() {
+                if (document.getElementById("id_is_forward").checked == false) {
+                    document.getElementById("id_email_forward").disabled = true;
+                    document.getElementById("id_is_copy").disabled = true;
+                } else {
+                    document.getElementById("id_email_forward").disabled = false;
+                    document.getElementById("id_is_copy").disabled = false;
+                }
+            }
+
+            function EditUser(edit_user) {
+                var accounts = {{ accounts|safe }};
+                var uidd = edit_user.rel;
+               for (var i = accounts.length - 1; i >= 0; i--){
+                   if (accounts[i].uid == uidd){
+                       console.log(uidd);
+                       document.getElementById('id_login_edit').value =accounts[i].logins;
+                       document.getElementById('id_domain_name').value =accounts[i].domain;
+                       document.getElementById('id_iname').value =accounts[i].iname;
+                       document.getElementById('id_fname').value =accounts[i].fname;
+                       document.getElementById('id_sex').value =accounts[i].sex;
+                       document.getElementById('id_hintq').value =accounts[i].hintq;
+                   }
+               }
+               console.log(accounts)
+
+
+
+            }
+            function Verification() {
+                window.location.reload(true)
+            }
+
+            setInterval(Verification, 100000)
+    </script>
+    <style type="text/css">
+         td.add_email{
+            padding-bottom: 5px;
+            padding-right: 10px;
+        }
+        .form-signin {
+            max-width: 330px;
+            padding: 15px;
+            margin: 0 auto;}
+    </style>
+</head>
+<body>
+<div class="container">
+
+<div class="row" style="text-align: center">
+    <div class="page-header">
+        <h2>Администрирование Yandex почты для домена</h2>
+            <p>{{ domain }}</p>
+            {% if username %}
+                <p>Вы авторизованы под <b>{{ username }}</b></p><br>
+                <p></p>
+                <a href="{% url 'logout' %}" class="btn btn-primary">Выход</a>
+                <p></p>
+                {% else %}
+                <p style="color: #cc1111">Авторизируйтесь</p>
+            {% endif %}
+    </div>
+</div>
+
+{#    Message info  #}
+    <div class="row">
+    <div class="col-sm-4"></div>
+    <div class="col-sm-4">
+        {# Info Message #}
+              {% if messages %}
+                {% for message in messages %}
+
+                  <div class="alert alert-dismissible {{ message.tags }}">
+                    {% if 'html_safe' in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
+                  </div>
+
+                {% endfor %}
+              {% endif %}
+        {# End Info Message #}
+    </div>
+
+    <div class="col-sm-4"></div>
+</div>
+{#   End Message info  #}
+{% block content %}{% endblock %}
+</div>
+<script src="{% static 'yandex/bootstrap/js/bootstrap.min.js' %}"></script>
+</body>
+</html>

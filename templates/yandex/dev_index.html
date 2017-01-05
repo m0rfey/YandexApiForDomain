@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+{% load staticfiles  %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    	<link href="{% static 'yandex/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    	<link href="{% static 'yandex/bootstrap/css/bootstrap-theme.min.css' %}" rel="stylesheet">
+
+    	<link href="{% static 'yandex/css/jq.css' %}" rel="stylesheet">
+    	<link href="{% static 'yandex/css/jquery.tablesorter.pager.css'%}" rel="stylesheet">
+    	<link href="{% static 'yandex/css/theme.blue.css' %}" rel="stylesheet">
+        <script src="{% static 'yandex/js/jquery-latest.min.js' %}"></script>
+
+{#    	<link href="../../static/yandex/css/table.css" rel="stylesheet">#}
+        <script src="{% static 'yandex/js/jquery.tablesorter.js' %}"></script>
+        <script src="{% static 'yandex/js/jquery.tablesorter.pager.js' %}"></script>
+        <script src="{% static 'yandex/js/jquery.tablesorter.widgets.js' %}"></script>
+
+    <title>Администрирование Yandex почты для домена</title>
+
+    <style type="text/css">
+        h2 { font-size: 130%; }
+        h2, p { text-align: center; }
+
+        table.tablesorter tbody tr.odd.checked td {
+            background: #8080c0;
+            color: #fff;
+        }
+        table.tablesorter tbody tr.even.checked td {
+            background: #a0a0e0;
+            color: #fff;
+        }
+        .tablesorter-filter.disabled {
+            display: none;
+        }
+
+        .spacer { height: 1000px; }
+        td.add_email{
+            padding-bottom: 5px;
+            padding-right: 10px;
+        }
+    </style>
+    <script type="text/javascript">
+
+        /*
+          header checkbox code added to parser-input-select.js in v2.24.6
+        */
+        $(function() {
+            var $table = $('table').tablesorter({
+                theme: 'blue',
+                widgets: ['zebra', 'filter', 'stickyHeaders'],
+                headers: {
+                    0: { sorter: 'checkbox' }
+                }
+            }).
+            tablesorterPager({
+                container: $(".pager"),
+                output : 'с {startRow} по {endRow} из {filteredRows}',
+                size: 5
+            });
+            var forward = $("id_is_forward").checked == false;
+            if (forward == false){
+                document.getElementById("id_email_forward").disabled = true;
+                document.getElementById("id_is_copy").disabled = true;
+            }
+        });
+        // Get Token
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        } //Get Token
+        function Verification() {
+            var dt = {{ accounts|safe }};
+            for (var i = dt.length - 1; i >= 0; i--) {
+{#                console.log(dt[i].forward)#}
+                console.log('Verification');
+                if (dt[i].forward == ''){
+                    var login = dt[i].logins;
+                    var forward_name = 'm0rfey@photomax.pp.ua';
+                    var csrftoken = getCookie('csrftoken');
+
+                    var data = {'csrfmiddlewaretoken':csrftoken,'login':login, 'forward_name':forward_name};
+                    $.ajax({
+                          type: "POST",
+                          url: {% url 'detail' %},
+                          data: data,
+                          dataType: 'json'
+                        });//ajax
+                    location.reload()
+                }//if
+                else{
+
+                }//else
+            }
+        }//Verification
+
+        setInterval(Verification, 500000);
+
+        $('#add_email').on('shown.bs.modal', function () {
+          $('#myInput').focus()
+        });
+
+        function Delete_email(is_delete){
+            var login = is_delete.rel;
+            var link = '/delete_user/'+login;
+            document.getElementById('log').innerHTML=login;
+            document.getElementById('modal-footer').innerHTML='' +
+                '<button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>' +
+                '<a href="'+ link +'" class="btn btn-primary" id="del">Удалить</a>'
+        }
+        function SetForward(set_forward){
+
+            var login = set_forward.rel;
+            var link = '/set_forward/'+login;
+            document.SetForw.action = get_action();
+            document.getElementById('login_forward').innerHTML=login;
+            document.getElementById('modal-footer-forward').innerHTML='' +
+                '<button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>'+
+                '<button type="submit" class="btn btn-primary" data-toggle="form" data-target="#set_forward_form">Создать</button>';
+
+            function get_action() {
+                return link
+            }
+        }
+        function DelForward(del_forward) {
+            var filter = del_forward.rel;
+            console.log(filter);
+{#            for (var i = filter.length - 1; i >= 0; i--) {#}
+{#                $("#id_em").append('<option value="'+ filter[i].split("'")[1] +'">'+filter[i].split("'")[1] +'</option>');#}
+{#                console.log(filter[i].split("'")[1])#}
+{#            }#}
+            document.getElementById('modal-footer-delforward').innerHTML='' +
+                '<button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>'+
+                '<button type="submit"  onclick="" class="btn btn-primary" data-toggle="form" data-target="#del_forward_form">Удалить</button>';
+        }
+        function CheckForward() {
+            if (document.getElementById("id_is_forward").checked == false){
+                document.getElementById("id_email_forward").disabled = true;
+                document.getElementById("id_is_copy").disabled = true;
+            }else{
+                document.getElementById("id_email_forward").disabled = false;
+                document.getElementById("id_is_copy").disabled = false;
+            }
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+<h2>Администрирование Yandex почты для домена</h2>
+<p>{{ domain }}</p>
+{% if username %}
+    <p>Вы авторизованы под <b>{{ username }}</b></p>
+    {% else %}
+    <p style="color: #cc1111">Авторизируйтесь</p>
+{% endif %}
+
+<div class="row">
+    <div class="col-sm-4"></div>
+    <div class="col-sm-4">
+        {# Info Message #}
+              {% if messages %}
+                {% for message in messages %}
+
+                  <div class="alert alert-dismissible {{ message.tags }}">
+                    {% if 'html_safe' in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
+                  </div>
+
+                {% endfor %}
+              {% endif %}
+        {# End Info Message #}
+    </div>
+    <div class="col-sm-4"></div>
+</div>
+
+<div class="row">
+     <input type="button" class="btn btn-primary" value="Добавить почтовый ящик" data-toggle="modal" data-target="#add_email">
+    <!-- Modal -->
+    <div class="modal fade" id="add_email" tabindex="-1" role="dialog" aria-labelledby="AddEmail">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="AddEmail">Новый почтовый ящик</h4>
+          </div>
+            <form action="{% url 'reg_user_token' %}" method="post" id="start">
+                {% csrf_token %}
+                <div class="modal-body">
+                  <table>
+                      <tr>
+                          <td class="add_email">{{ add_e_form.login }}</td>
+                          <td class="add_email">{{ add_e_form.login.label }}</td>
+                          <td class="add_email">{{ add_e_form.is_forward }}{{ add_e_form.is_forward.label }}</td>
+                      </tr>
+                      <tr>
+                          <td class="add_email">{{ add_e_form.passw1 }}</td>
+                          <td class="add_email"></td>
+                          <td class="add_email">{{ set_forward.email_forward }}</td>
+                      </tr>
+                      <tr>
+                          <td class="add_email">{{ add_e_form.passw2 }}</td>
+                          <td class="add_email"></td>
+                          <td class="add_email">{{ set_forward.is_copy }}{{ set_forward.is_copy.label }}</td>
+                      </tr>
+                  </table>
+                </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+                <button type="submit" class="btn btn-primary" data-toggle="form" data-target="#start">Создать</button>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+</div>
+
+<!-- pager -->
+<div class="row">
+<div class="pager tablesorter-pager" style="">
+		Страница: <select class="gotoPage"></select>
+		<img src="{% static 'yandex/icons/first.png' %}" class="first disabled" alt="First" title="First page" tabindex="0">
+		<img src="{% static 'yandex/icons/prev.png' %}" class="prev disabled" alt="Prev" title="Previous page" tabindex="0">
+		<span class="pagedisplay"></span> <!-- this can be any element, including an input -->
+		<img src="{% static 'yandex/icons/next.png' %}" class="next" alt="Next" title="Next page" tabindex="0">
+		<img src="{% static 'yandex/icons/last.png' %}" class="last" alt="Last" title="Last page" tabindex="0">
+		<select class="pagesize">
+			<option value="5">5</option>
+			<option value="10">10</option>
+			<option value="50">50</option>
+			<option value="100">100</option>
+		</select>
+	</div>
+</div>
+
+<div class="row">
+<table class="tablesorter">
+
+     <thead>
+         <tr>
+              <th>ID</th>
+              <th>Логин</th>
+              <th>Ативен</th>
+              <th>Рассылка</th>
+              <th>Переадресация</th>
+              <th>ID переадресации</th>
+              <th>Копия</th>
+              <th>Переадресация на</th>
+              <th></th>
+              <th></th>
+              <th></th>
+         </tr>
+     </thead>
+
+     <tbody>
+     {% for account in accounts %}
+     <tr>
+        <td>{{ account.uid }}</td>
+        <td>{{ account.logins }}</td>
+        <td>{{ account.enabled }}</td>
+        <td>{{ account.maillist }}</td>
+       {% if account.forward %}
+           <td>
+               {% for foo in account.forward %}
+                   {{ foo }}<br>
+               {% endfor %}
+           </td>
+
+           <td>
+               {% for foo in account.id_fw %}
+                     {{ foo }}<a href="{% url 'del_forward' account.logins foo %}"> Удалить</a><br>
+               {% endfor %}
+            </td>
+            <td>
+            {% for foo in account.copy %}
+                    {{ foo }}<br>
+            {% endfor %}
+            </td>
+            <td>
+            {% for foo in account.filter_param %}
+                {{ foo }}<br>
+            {% endfor %}
+            </td>
+       {% else %}
+           <td></td>
+           <td></td>
+           <td></td>
+           <td></td>
+       {% endif %}
+       <td><a href="#">Редактировать</a></td>
+       <td><a href="#" onclick="Delete_email(this)" data-toggle="modal" data-target="#is_delete" rel="{{ account.logins }}">Удалить ящик</a></td>
+       <td><a href="#" onclick="SetForward(this)" data-toggle="modal" data-target="#set_forward" rel="{{ account.logins }}">Добавить переадресацию</a></td>
+{#       <td disabled="true"><a href="#" onclick="DelForward(this)" data-toggle="modal" data-target="#del_forward" rel1="{{ account.logins }}" rel2="{{ account.id_fw }}">Удалить пересылку</a></td>#}
+    </tr>
+     {% endfor %}
+     </tbody>
+</table>
+</div>
+{# Delete Email #}
+<div class="row">
+    <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" id="is_delete">
+      <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="AddEmail">Удаление почтового ящика</h4>
+          </div>
+            
+                <div class="modal-body">
+                        <p> Вы хотите удалить почтовый ящик?</p>
+                        <p id="log"></p>
+
+                </div>
+                <div class="modal-footer" id = "modal-footer"></div>
+        </div>
+      </div>
+    </div>
+</div>
+{# End Delete Email #}
+
+{# Set Forward Email #}
+<div class="row">
+    <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" id="set_forward">
+      <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="SetForward">Добавлене переадресации</h4>
+          </div>
+            <form action="" name="SetForw" method="POST" id="set_forward_form">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Вы добавляете переадресацию для</p>
+                    <p id="login_forward"></p>
+                    {{ set_forward.login }}
+                    {{ set_forward.email_forward }}
+                    {{ set_forward.is_copy }}
+                    {{ set_forward.is_copy.label }}
+                </div>
+                <div class="modal-footer" id = "modal-footer-forward"></div>
+            </form>
+        </div>
+      </div>
+    </div>
+</div>
+{# End Set Forward Email #}
+{# Del Forward #}
+{#<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" id="del_forward">#}
+{#      <div class="modal-dialog modal-sm" role="document">#}
+{#        <div class="modal-content">#}
+{#          <div class="modal-header">#}
+{#            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>#}
+{#            <h4 class="modal-title" id="DelForward">Удаление пересылки</h4>#}
+{#          </div>#}
+{#            <form action="{% url 'del_forward' %}" name="DeleteForward" method="POST" id="del_forward_form">#}
+{#                {% csrf_token %}#}
+{#                <div class="modal-body">#}
+{#                     {{ del_forward }}#}
+{#                </div>#}
+{#                <div class="modal-footer" id = "modal-footer-delforward"></div>#}
+{#            </form>#}
+{#        </div>#}
+{#      </div>#}
+{#    </div>#}
+{# End Del Forward #}
+<div class="row">
+<div class="pager tablesorter-pager" style="">
+		Страница: <select class="gotoPage"></select>
+		<img src="{% static 'yandex/icons/first.png' %}" class="first disabled" alt="First" title="First page" tabindex="0">
+		<img src="{% static 'yandex/icons/prev.png' %}" class="prev disabled" alt="Prev" title="Previous page" tabindex="0">
+		<span class="pagedisplay"></span> <!-- this can be any element, including an input -->
+		<img src="{% static 'yandex/icons/next.png' %}" class="next" alt="Next" title="Next page" tabindex="0">
+		<img src="{% static 'yandex/icons/last.png' %}" class="last" alt="Last" title="Last page" tabindex="0">
+		<select class="pagesize">
+			<option value="5">5</option>
+			<option value="10">10</option>
+			<option value="50">50</option>
+			<option value="100">100</option>
+		</select>
+	</div>
+    </div>
+
+<div class="spacer"></div>
+</div>
+    <script src="{% static 'yandex/bootstrap/js/bootstrap.min.js' %}"></script>
+    {#    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>#}
+</body>
+</html>

@@ -1,0 +1,9 @@
+{% extends 'yandex/base.html' %}
+
+{% block content %}
+    <form class="form-signin" action="{% url 'login' %}" method="post">
+    {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Войти</button>
+      </form>
+{% endblock %}

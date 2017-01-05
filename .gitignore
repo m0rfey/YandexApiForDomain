@@ -1,0 +1,8 @@
+*.pyc
+
+mailadmin/__pycache__/
+../../yandex_api_admin/yandex_api_admin/secret.py
+templates/mailadmin/dev_index.html
+*.sqlite3
+templates/admin/
+templates/registration/
