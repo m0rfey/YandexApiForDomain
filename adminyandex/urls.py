@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^$', views.login, name='login'),
     url(r'^emails/$', views.index, name='home'),
     url(r'^logout/$', views.logout, name='logout'),
+    url(r'^update_db/$', views.parser, name='update_db'),
     url(r'^get_detail/$', views.get_detail, name='detail'),
     url(r'^reg_user_token/$', views.reg_user_token, name='reg_user_token'),
     url(r'^edit_user/$', views.edit_user, name='edit_user'),

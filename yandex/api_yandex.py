@@ -1,11 +1,18 @@
+import os
+
 from django.contrib import auth
 
+from adminyandex.settings import BASE_DIR
 from .models import MailAdmin
 
-
-TOKEN = MailAdmin.objects.get(id = 1).token2 # Token APIv.2
-token = MailAdmin.objects.get(id = 1).token1 # Token APIv.1
-DOMAIN = MailAdmin.objects.get(id = 1).name #
+if os.path.join(BASE_DIR, 'db.sqlite3'):
+    TOKEN = MailAdmin.objects.get(id = 1).token2 # Token APIv.2
+    token = MailAdmin.objects.get(id = 1).token1 # Token APIv.1
+    DOMAIN = MailAdmin.objects.get(id = 1).name #
+else:
+    TOKEN = ''
+    DOMAIN = ''
+    token = ''
 
 
 URL_API = 'https://pddimp.yandex.ru' #

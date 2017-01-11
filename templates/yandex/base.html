@@ -108,7 +108,10 @@
                        document.getElementById('id_iname').value =accounts[i].iname;
                        document.getElementById('id_fname').value =accounts[i].fname;
                        document.getElementById('id_sex').value =accounts[i].sex;
-                       document.getElementById('id_hintq').value =accounts[i].hintq;
+                       if (accounts[i].hintq != []){
+                           document.getElementById('id_hintq').value =accounts[i].hintq;
+                       }
+
                    }
                }
                console.log(accounts)
@@ -120,7 +123,7 @@
                 window.location.reload(true)
             }
 
-            setInterval(Verification, 100000)
+{#            setInterval(Verification, 100000)#}
     </script>
     <style type="text/css">
          td.add_email{
@@ -140,7 +143,9 @@
     <div class="page-header">
         <h2>Администрирование Yandex почты для домена</h2>
             <p>{{ domain }}</p>
+        <hr>
             {% if username %}
+                <p>Последнее обновление базы было: {{ last_update_db }}</p>
                 <p>Вы авторизованы под <b>{{ username }}</b></p><br>
                 <p></p>
                 <a href="{% url 'logout' %}" class="btn btn-primary">Выход</a>

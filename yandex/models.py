@@ -26,12 +26,13 @@ class MailAdmin(models.Model):
     name = models.CharField(verbose_name='Домен', max_length=100, unique=True)
     token1 = models.CharField(verbose_name='API_v1 Token', max_length=250)
     token2 = models.CharField(verbose_name='API_v2 Token', max_length=250)
+    last_update_db = models.DateTimeField(verbose_name='Last update Data Base')
 
     default_email_forward = models.EmailField(max_length=50, blank=True, null=True, verbose_name='Почта для переадресации')
 
     class Meta:
-        verbose_name = 'Mail Admin'
-        verbose_name_plural = 'Mail Admin'
+        verbose_name = 'Настройки'
+        verbose_name_plural = 'Настройки'
 
     def __str__(self):
         return self.name
@@ -39,19 +40,23 @@ class MailAdmin(models.Model):
 
 class InfoEmail(models.Model):
     login = models.CharField(max_length=50)
-    domain = models.ForeignKey(MailAdmin)
+    domain = models.ForeignKey(MailAdmin, related_name='MailAdmin')
     sex = models.CharField(blank=True, null=True, max_length=50)
     birth_date = models.CharField(blank=True, null=True, max_length=50)
     iname = models.CharField(blank=True, null=True, max_length=50)
     fname = models.CharField(blank=True, null=True, max_length=50)
-    uid = models.CharField(max_length=50)
+    uid = models.CharField(blank=True, null=True, max_length=50)
     enabled = models.CharField(blank=True, null=True, max_length=50)
     ready = models.CharField(blank=True, null=True, max_length=50)
     hintq = models.CharField(verbose_name='Secret Question', max_length=50)
 
+
     class Meta:
-        verbose_name = 'Info Email'
-        verbose_name_plural = 'Info Email'
+        verbose_name = 'Email'
+        verbose_name_plural = 'Emails'
+
+    def __str__(self):
+        return self.login
 
 
 class Alliases(models.Model):
@@ -59,24 +64,27 @@ class Alliases(models.Model):
     info_email = models.ForeignKey(InfoEmail)
 
     class Meta:
-        verbose_name = 'Alliases'
-        verbose_name_plural = 'Alliases'
+        verbose_name = 'Алиас'
+        verbose_name_plural = 'Алиас'
 
 class Maillist(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, blank=True, null=True,)
     infoemail = models.ForeignKey(InfoEmail)
 
     class Meta:
-        verbose_name = 'Maillist'
-        verbose_name_plural = 'Maillist'
+        verbose_name = 'Рассылка'
+        verbose_name_plural = 'Рассылки'
 
 class Forward(models.Model):
-    info_email = models.CharField(blank=True, null=True, max_length=50)
+    info_email = models.ForeignKey(InfoEmail, blank=True, null=True, max_length=50)
     id_fw = models.CharField(blank=True, null=True, max_length=50)
     forward = models.CharField(verbose_name='Yes/No', blank=True, null=True, max_length=50)
     copy = models.CharField(verbose_name='Yes/No', blank=True, null=True, max_length=50)
     filter_param = models.CharField(verbose_name='Forwarding to', blank=True, null=True, max_length=50)
 
     class Meta:
-        verbose_name = 'Forward'
-        verbose_name_plural = 'Forward'
+        verbose_name = 'Переадресация'
+        verbose_name_plural = 'Переадресации'
+
+    def __str__(self):
+        return self.forward +' '+ self.info_email.login

@@ -12,7 +12,8 @@
     <hr>
     <div class="btn-group" role="group">
         <input type="button" class="btn btn-primary" value="Добавить почтовый ящик" data-toggle="modal" data-target="#add_email">
-        <input type="button" class="btn btn-primary" value="Добавить домен" data-toggle="modal" data-target="#add_email">
+        <a href="{% url 'update_db' %}" class="btn btn-primary" >Обновить базу</a>
+{#        <input type="button" class="btn btn-primary" value="Добавить домен" data-toggle="modal" disabled data-target="#add_email">#}
     </div><hr>
 
     <!-- Modal -->
@@ -156,12 +157,16 @@
     </tr>
   </thead>
   <tbody>
-   {% for account in accounts %}
+  {% for account in accounts %}
      <tr>
         <td>{{ account.uid }}</td>
         <td>{{ account.logins }}</td>
         <td>{{ account.enabled }}</td>
-        <td>{{ account.maillist }}</td>
+        <td>
+            {% for foo in account.maillist %}
+                {{ foo.name }}
+            {% endfor %}
+        </td>
        {% if account.forward %}
            <td>
                {% for foo in account.forward %}
@@ -170,18 +175,20 @@
            </td>
 
            <td>
+
                {% for foo in account.id_fw %}
-                     {{ foo }}<a href="{% url 'del_forward' account.logins foo %}"> Удалить</a><br>
+                     {{ foo }}
+                   <a href="{% url 'del_forward' account.logins foo %}"> Удалить</a><br>
                {% endfor %}
             </td>
             <td>
             {% for foo in account.copy %}
-                    {{ foo }}<br>
+                    {{ foo}}<br>
             {% endfor %}
             </td>
             <td>
             {% for foo in account.filter_param %}
-                {{ foo }}<br>
+                {{ foo}}<br>
             {% endfor %}
             </td>
        {% else %}
@@ -196,6 +203,51 @@
     </tr>
    {% endfor %}
   </tbody>
+</table>
+<table>
+    <thead>
+        <tr></tr>
+        <tr></tr>
+        <tr></tr>
+        <tr></tr>
+        <tr></tr>
+    </thead>
+    <tbody>
+    {% for em in accounts.infoeamil %}
+        <tr>
+        <td>{{ em.uid }}</td>
+        <td>{{ em.login }}</td>
+        <td>{{ em.enabled }}</td>
+        {% for foo in accounts.alliases %}
+            <td>{{ foo.name }}</td>
+        {% endfor %}
+        {% for foo in accounts.maillist %}
+            <td>{{ foo.name }}</td>
+          {% endfor %}
+
+        {% for foo in accounts.forward %}
+            <td>{{ foo.id_fw }}</td>
+            <td>{{ foo.forward }}</td>
+            <td>{{ foo.copy }}</td>
+            <td>{{ foo.filter_param }}</td>
+          {% endfor %}
+        </tr>
+
+  {% endfor %}
+  {% for foo in accounts.alliases %}
+      <tr>
+      <td>{{ foo }}</td>
+      </tr>
+
+  {% endfor %}
+  {% for foo in accounts.maillist %}
+    <td>{{ foo }}</td>
+  {% endfor %}
+  {% for foo in accounts.forward %}
+    <td>{{ foo }}</td>
+  {% endfor %}
+
+    </tbody>
 </table>
 
 </div>
