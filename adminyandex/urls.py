@@ -24,15 +24,19 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', views.login, name='login'),
     url(r'^emails/$', views.index, name='home'),
+    url(r'^upds/$', views.upds, name='upds'),
     url(r'^logout/$', views.logout, name='logout'),
     url(r'^update_db/$', views.parser, name='update_db'),
-    url(r'^get_detail/$', views.get_detail, name='detail'),
+    # url(r'^get_detail/$', views.get_detail, name='detail'),
     url(r'^reg_user_token/$', views.reg_user_token, name='reg_user_token'),
     url(r'^edit_user/$', views.edit_user, name='edit_user'),
     #url(r'^get_login/(?P<logins>[^/]+)$', views.get_login, name='get_login'),
-    url(r'^delete_user/(?P<login>[^/]+)$', views.delete_user, name='delete_user'),
-    url(r'^set_forward/(?P<login>[^/]+)$', views.set_forward, name='set_forward'),
+    url(r'^delete_user/$', views.delete_user, name='delete_user'),
+    url(r'^set_forward/$', views.set_forward, name='set_forward'),
     url(r'^del_forward/(?P<login>[^/]+)/(?P<id_fw>\d+)$', views.del_forward, name='del_forward'),
+    url(r'^del_forw/$', views.del_forw, name='del_forw'),
+
+    url(r'^render_to_json/$', views.render_to_json, name='render_to_json'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)

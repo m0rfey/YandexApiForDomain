@@ -18,16 +18,320 @@
 
     <script type="text/javascript">
         $(document).ready(function() {
+            $.getJSON({% url 'render_to_json' %},
+                function (data) {
+                success = data.success;
+                update_messages(data.messages);
+            }
+            );
+
+            $('[data-toggle="tooltip"]').tooltip();
+
             $('#example').DataTable();
 
-        });
-        $(function () {
-                var forward = $("id_is_forward").checked == false;
+
+            $('#add_email').on('shown.bs.modal', function () {
+                $('#btn_create_email').focus()
+            });
+
+            $('#is_delete').on('shown.bs.modal', function () {
+                $('#delete_email').focus()
+            });
+
+            $('#set_forward').on('shown.bs.modal', function () {
+                $('#btn_setforward').focus()
+            });
+
+            $('#del_forward').on('shown.bs.modal', function () {
+                $('#delete_forward').focus()
+            });
+
+            $.ajaxSetup({
+                type: 'POST',
+                headers: { "cache-control": "no-cache" }
+            });
+
+
+            var forward = $("id_is_forward").checked == false;
                 if (forward == false) {
                     document.getElementById("id_email_forward").disabled = true;
                     document.getElementById("id_is_copy").disabled = true;
                 }
+            $('input#id_is_forward').on('click', function () {
+                if (document.getElementById("id_is_forward").checked == false) {
+                    document.getElementById("id_email_forward").disabled = true;
+                    document.getElementById("id_is_copy").disabled = true;
+                } else {
+                    document.getElementById("id_email_forward").disabled = false;
+                    document.getElementById("id_is_copy").disabled = false;
+                }
             });
+
+            $('button#btn_setforward').click(function (){
+                    var csrftoken = getCookie('csrftoken');
+
+                    dt = {
+                        'csrfmiddlewaretoken':csrftoken,
+                        'login':$('p#login_forward').text(),
+                        'email_forward': document.forms['set_forward_form'].elements['id_email_forward'].value,
+                        'is_copy': document.forms['set_forward_form'].elements['id_is_copy'].checked
+                    };
+                    $('#set_forward').modal('hide');
+
+                    $.ajax({
+                        url: {% url 'set_forward' %},
+                        type: 'POST',
+                        data: dt,
+                        datatype: 'jsonp',
+                        success: function (data) {
+                            $supplierRow = $('tr#'+$('p#uid_forward').text());
+
+                            $.getJSON({% url 'render_to_json' %},
+                                function (data) {
+
+                                    update_messages(data.messages);
+                                }
+                            );
+
+                            if (data.length > 0){
+                                for (var i=data[0].id_email.length-1; i>=0; i--){
+                                    ls = [data[0].logins,data[0].id_email[i].id_fw,data[0].uid];
+                                    if ($supplierRow.find(".id_fw-"+data[0].id_email[i].id_fw).text().trim()!==data[0].id_email[i].id_fw) {
+                                        //Forward
+                                        if (data[0].id_email[i].forwards == 'yes'){
+                                            $supplierRow.find("td:nth-child(5)").append(
+                                            '<div class="col-md-12 forward-' + data[0].id_email[i].id_fw + '" style="text-align: center">' +
+                                            '<span class="glyphicon glyphicon-ok-circle" style="color: #3fb919"></span>' +
+                                            '</div>'
+                                            );
+                                        }else{
+                                            $supplierRow.find("td:nth-child(5)").append(
+                                            '<div class="col-md-12 forward-' + data[0].id_email[i].id_fw + '" style="text-align: center">' +
+                                            '<span class="glyphicon glyphicon glyphicon-remove-circle" style="color: #ef0303"></span>' +
+                                            '</div>'
+                                            );
+                                        }
+                                        //Enabled forward
+                                        if (data[0].id_email[i].enabled_forw == 'yes'){
+                                            $supplierRow.find("td:nth-child(6)").append(
+                                            '<div class="col-md-12 forward-' + data[0].id_email[i].id_fw + '"style="text-align: center">' +
+                                            '<span class="glyphicon glyphicon-ok-circle" style="color: #3fb919"></span>' +
+                                            '</div>'
+                                            );
+                                        }else{
+                                            $supplierRow.find("td:nth-child(6)").append(
+                                            '<div class="col-md-12 forward-' + data[0].id_email[i].id_fw + '"style="text-align: center">' +
+                                            '<span class="glyphicon glyphicon glyphicon-remove-circle" style="color: #ef0303"></span>' +
+                                            '</div>'
+                                        );
+                                        }
+                                        // Id forward
+                                        $supplierRow.find("td:nth-child(7)").append(
+                                            '<div class="col-md-6 id_fw-' + data[0].id_email[i].id_fw + '" style="padding-right: 0; padding-left: 0;">'
+                                            + data[0].id_email[i].id_fw +
+                                            '</div>' +
+                                            '<div class="col-md-6 btn-'+ data[0].id_email[i].id_fw +'" style="padding-right: 0; padding-left: 0; text-align: center">' +
+                                            '<a href="#" id="delete_f" onclick="DelForwardModal(\''+data[0].logins+'\',\''+data[0].id_email[i].id_fw+'\',\''+data[0].uid+'\')" data-toggle="modal" data-target="#del_forward">' +
+                                            '<span class="glyphicon glyphicon-trash" data-toggle="tooltip" title="Удалить переадресацию"></span>' +
+                                            '</a></div>'
+                                        );
+                                        // Copy forward
+                                        if (data[0].id_email[i].copies == 'yes'){
+                                            $supplierRow.find("td:nth-child(8)").append(
+                                             '<div class="col-md-12 copy-'+ data[0].id_email[i].id_fw +'"style="text-align: center">' +
+                                             '<span class="glyphicon glyphicon-ok-circle" style="color: #3fb919"></span>' +
+                                             '</div>'
+                                         );
+                                        }else{
+                                            $supplierRow.find("td:nth-child(8)").append(
+                                             '<div class="col-md-12 copy-'+ data[0].id_email[i].id_fw +'"style="text-align: center">' +
+                                             '<span class="glyphicon glyphicon glyphicon-remove-circle" style="color: #ef0303"></span>' +
+                                             '</div>'
+                                         );
+                                        }
+                                        //Filter params
+                                        $supplierRow.find("td:nth-child(9)").append(
+                                            '<div class="col-md-12 filter_param-'+ data[0].id_email[i].id_fw +'">'+ data[0].id_email[i].filter_param +'</div>'
+                                        );
+{#                                        $supplierRow.find("td:nth-child(5)").append(#}
+{#                                            '<div class="col-md-12 forward-' + data[0].id_email[i].id_fw + '">' + data[0].id_email[i].forwards + '</div>'//text(data[0].id_email[i].forwards)#}
+{#                                        );#}
+{#                                        $supplierRow.find("td:nth-child(6)").append(#}
+{#                                            '<div class="col-md-12 forward-' + data[0].id_email[i].id_fw + '">' + data[0].id_email[i].enabled_forw + '</div>'#}
+{#                                        );#}
+{#                                        $supplierRow.find("td:nth-child(7)").append(#}
+{#                                            '<div class="col-md-6 id_fw-' + data[0].id_email[i].id_fw + '" style="padding-right: 0; padding-left: 0;">' #}
+{#                                            + data[0].id_email[i].id_fw + #}
+{#                                            '</div>' +#}
+{#                                            '<div class="col-md-6 btn-'+ data[0].id_email[i].id_fw +'" style="padding-right: 0; padding-left: 0; text-align: center">' +#}
+{#                                            '<a href="#" id="delete_f" onclick="DelForwardModal(\''+data[0].logins+'\',\''+data[0].id_email[i].id_fw+'\',\''+data[0].uid+'\')" data-toggle="modal" data-target="#del_forward">' +#}
+{#                                            '<span class="glyphicon glyphicon-trash" data-toggle="tooltip" title="Удалить переадресацию"></span>' +#}
+{#                                            '</a></div>'#}
+{#                                        );#}
+{#                                         $supplierRow.find("td:nth-child(8)").append(#}
+{#                                             '<div class="col-md-12 copy-'+ data[0].id_email[i].id_fw +'">'+ data[0].id_email[i].copies +'</div>'#}
+{#                                         );#}
+
+                                    }
+                                }
+                            }
+                            document.getElementById('set_forward_form').reset();
+                        }
+
+                    });
+
+                });
+
+            $('button#delete_forward').click(function () {
+                    $('div .forward-'+ $('span#id_fw').text()).fadeOut("slow");
+                    $('div .enabled-forward-'+ $('span#id_fw').text()).fadeOut("slow");
+                    $('div .id_fw-'+ $('span#id_fw').text()).fadeOut("slow");
+                    $('div .btn-'+ $('span#id_fw').text()).fadeOut("slow");
+                    $('div .copy-'+ $('span#id_fw').text()).fadeOut("slow");
+                    $('div .filter_param-'+ $('span#id_fw').text()).fadeOut("slow");
+                    $('#del_forward').modal('hide');
+
+                    var csrftoken = getCookie('csrftoken');
+                    var dt = {'csrfmiddlewaretoken':csrftoken,'login':$('#login_forw').text(), 'id_fw':$('#id_fw').text()};
+                    $.ajax({
+                        url: {% url 'del_forw' %},
+                        type: 'POST',
+                        data: dt,
+                        dataType: 'json',
+                        success: function (data) {
+                            $.getJSON({% url 'render_to_json' %},
+                                function (data) {
+                                    success = data.success;
+                                    update_messages(data.messages);
+                                }
+                            );
+                            console.log('success delete forward');
+                            document.getElementById('set_forward_form').reset();
+                        }
+
+                    });
+                    });
+
+            $('button#btn_create_email').on('click',function () {
+                var login = document.getElementById('id_login').value;
+                var password1 = document.getElementById('id_passw1').value;
+                var password2 = document.getElementById('id_passw2').value;
+                var is_forward = document.getElementById('id_is_forward').checked;
+                if (is_forward == true){
+                    var email_forward = document.getElementById('id_email_forward').value;
+                    var is_copy = document.getElementById('id_is_copy').checked
+                }
+                var csrftoken = getCookie('csrftoken');
+
+                var dt = {
+                    'csrfmiddlewaretoken':csrftoken,
+                    'login':login,
+                    'password1':password1,
+                    'password2':password2,
+                    'is_forward': is_forward,
+                    'email_forward': email_forward,
+                    'is_copy': is_copy
+                };
+
+                $.ajax({
+                    url:{% url 'reg_user_token' %},
+                    type: 'POST',
+                    data: dt,
+                    datatype: 'json',
+                    success: function (data) {
+                        $.getJSON({% url 'render_to_json' %},
+                                function (data) {
+                                    success = data.success;
+                                    update_messages(data.messages);
+                                }
+
+                            );
+{#                        document.getElementById('form_addemail').reset();#}
+                    }
+
+                });
+
+                $('#add_email').modal('hide');
+
+            });
+
+            $('button#delete_email').click(function (){
+                    var csrftoken = getCookie('csrftoken');
+                    var dt = {'csrfmiddlewaretoken':csrftoken, 'login':$('p#log').text()};
+                    $('#is_delete').modal('hide');
+                    $.ajax({
+                        url: {% url 'delete_user' %},
+                        type: 'POST',
+                        data: dt,
+                        dataType: 'json',
+                        success: function (data) {
+                            $.getJSON({% url 'render_to_json' %},
+                                function (data) {
+                                    success = data.success;
+                                    update_messages(data.messages);
+                                }
+                            );
+                        }
+                    });
+                    $('tr#'+$('p#uid').text()).fadeOut("slow");
+                });
+
+            $('button#btn_edit_email_seve').click(function () {
+
+
+                var csrftoken = getCookie('csrftoken');
+                var dt = {
+                    'csrfmiddlewaretoken':csrftoken,
+                    'login_edit':document.forms['edit_user_form'].elements['id_login_edit'].value,
+                    'password':document.forms['edit_user_form'].elements['id_password'].value,
+                    'domain_name':document.forms['edit_user_form'].elements['id_domain_name'].value,
+                    'iname': document.forms['edit_user_form'].elements['id_iname'].value,
+                    'fname': document.forms['edit_user_form'].elements['id_fname'].value,
+                    'sex': document.forms['edit_user_form'].elements['id_sex'].value,
+                    'hintq': document.forms['edit_user_form'].elements['id_hintq'].value,
+                    'hinta': document.forms['edit_user_form'].elements['id_hinta'].value
+                };
+
+
+                $.ajax({
+                    url:{% url 'edit_user' %},
+                    type: 'POST',
+                    data: dt,
+                    datatype: 'json',
+                    success: function (data) {
+                        $.getJSON({% url 'render_to_json' %},
+                                        function (data) {
+                                            success = data.success;
+                                            update_messages(data.messages);
+                                        }
+                                    );
+                        $('#edit_user').modal('hide');
+                    }
+            });
+            })
+        });
+
+        function update_messages(messages){
+            $("div#message").html("");
+            $.each(messages, function (i, m) {
+                $("div#message").append(
+                    "<div class='alert "+m.extra_tags+"''>"+
+                    "<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button>"
+                    +m.message+"</div>"
+                );
+            });}
+
+            function updateRow() {
+                $.ajax({
+                    url:{% url 'home' %},
+                    datatype: 'HTML',
+                    success: function (data) {
+                        console.log(data);
+
+                    }
+                });
+            }
+
 
             // Get Token
             function getCookie(name) {
@@ -47,83 +351,41 @@
             } //Get Token
 
 
-            $('#add_email').on('shown.bs.modal', function () {
-                $('#myInput').focus()
-            });
+            function Delete_email(logins, ac_id) {
 
-            function Delete_email(is_delete) {
-                var login = is_delete.rel;
-                var link = '/delete_user/' + login;
-                document.getElementById('log').innerHTML = login;
-                document.getElementById('modal-footer').innerHTML = '' +
-                    '<button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>' +
-                    '<a href="' + link + '" class="btn btn-primary" id="del">Удалить</a>'
+                document.getElementById('log').innerHTML = logins;
+                document.getElementById('uid').innerHTML = ac_id;
             }
 
-            function SetForward(set_forward) {
-
-                var login = set_forward.rel;
-                var link = '/set_forward/' + login;
-                document.SetForw.action = get_action();
-                document.getElementById('login_forward').innerHTML = login;
-                document.getElementById('modal-footer-forward').innerHTML = '' +
-                    '<button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>' +
-                    '<button type="submit" class="btn btn-primary" data-toggle="form" data-target="#set_forward_form">Создать</button>';
-
-                function get_action() {
-                    return link
-                }
+            function SetForward(log, ac_id) {
+                document.getElementById('login_forward').innerHTML = log;
+                document.getElementById('uid_forward').innerHTML = ac_id;
+                console.log();
             }
 
-            function DelForward(del_forward) {
-                var filter = del_forward.rel;
-                console.log(filter);
-                {#            for (var i = filter.length - 1; i >= 0; i--) {#}
-                {#                $("#id_em").append('<option value="'+ filter[i].split("'")[1] +'">'+filter[i].split("'")[1] +'</option>');#}
-                {#                console.log(filter[i].split("'")[1])#}
-                {#            }#}
-                document.getElementById('modal-footer-delforward').innerHTML = '' +
-                    '<button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>' +
-                    '<button type="submit"  onclick="" class="btn btn-primary" data-toggle="form" data-target="#del_forward_form">Удалить</button>';
-            }
-
-            function CheckForward() {
-                if (document.getElementById("id_is_forward").checked == false) {
-                    document.getElementById("id_email_forward").disabled = true;
-                    document.getElementById("id_is_copy").disabled = true;
-                } else {
-                    document.getElementById("id_email_forward").disabled = false;
-                    document.getElementById("id_is_copy").disabled = false;
-                }
+            function DelForwardModal(login, id_fw, ac_uid) {
+                document.getElementById('id_fw').innerHTML = id_fw;
+                document.getElementById('login_forw').innerHTML = login;
             }
 
             function EditUser(edit_user) {
                 var accounts = {{ accounts|safe }};
                 var uidd = edit_user.rel;
-               for (var i = accounts.length - 1; i >= 0; i--){
-                   if (accounts[i].uid == uidd){
-                       console.log(uidd);
-                       document.getElementById('id_login_edit').value =accounts[i].logins;
-                       document.getElementById('id_domain_name').value =accounts[i].domain;
-                       document.getElementById('id_iname').value =accounts[i].iname;
-                       document.getElementById('id_fname').value =accounts[i].fname;
-                       document.getElementById('id_sex').value =accounts[i].sex;
-                       if (accounts[i].hintq != []){
-                           document.getElementById('id_hintq').value =accounts[i].hintq;
-                       }
+                for (var i = accounts.length - 1; i >= 0; i--) {
+                    if (accounts[i].uid == uidd) {
+                        console.log(uidd);
+                        document.getElementById('id_login_edit').value = accounts[i].logins;
+                        document.getElementById('id_domain_name').value = accounts[i].domain;
+                        document.getElementById('id_iname').value = accounts[i].iname;
+                        document.getElementById('id_fname').value = accounts[i].fname;
+                        document.getElementById('id_sex').value = accounts[i].sex;
+                        if (accounts[i].hintq != []) {
+                            document.getElementById('id_hintq').value = accounts[i].hintq;
+                        }
 
-                   }
-               }
-               console.log(accounts)
-
-
-
+                    }
+                }
             }
-            function Verification() {
-                window.location.reload(true)
-            }
-
-{#            setInterval(Verification, 100000)#}
     </script>
     <style type="text/css">
          td.add_email{
@@ -138,6 +400,10 @@
 </head>
 <body>
 <div class="container">
+
+{# Info Message #}
+<div class="col-sm-12 navbar-fixed-top" id="message"></div>
+{#   End Message info  #}
 
 <div class="row" style="text-align: center">
     <div class="page-header">
@@ -156,26 +422,6 @@
     </div>
 </div>
 
-{#    Message info  #}
-    <div class="row">
-    <div class="col-sm-4"></div>
-    <div class="col-sm-4">
-        {# Info Message #}
-              {% if messages %}
-                {% for message in messages %}
-
-                  <div class="alert alert-dismissible {{ message.tags }}">
-                    {% if 'html_safe' in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
-                  </div>
-
-                {% endfor %}
-              {% endif %}
-        {# End Info Message #}
-    </div>
-
-    <div class="col-sm-4"></div>
-</div>
-{#   End Message info  #}
 {% block content %}{% endblock %}
 </div>
 <script src="{% static 'yandex/bootstrap/js/bootstrap.min.js' %}"></script>

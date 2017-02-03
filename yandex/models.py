@@ -48,7 +48,7 @@ class InfoEmail(models.Model):
     uid = models.CharField(blank=True, null=True, max_length=50)
     enabled = models.CharField(blank=True, null=True, max_length=50)
     ready = models.CharField(blank=True, null=True, max_length=50)
-    hintq = models.CharField(verbose_name='Secret Question', max_length=50)
+    hintq = models.CharField(verbose_name='Secret Question', max_length=50, blank=True, null=True,)
 
 
     class Meta:
@@ -77,14 +77,24 @@ class Maillist(models.Model):
 
 class Forward(models.Model):
     info_email = models.ForeignKey(InfoEmail, blank=True, null=True, max_length=50)
-    id_fw = models.CharField(blank=True, null=True, max_length=50)
-    forward = models.CharField(verbose_name='Yes/No', blank=True, null=True, max_length=50)
-    copy = models.CharField(verbose_name='Yes/No', blank=True, null=True, max_length=50)
+    id_fw = models.CharField(verbose_name='Forward ID', blank=True, null=True, max_length=50)
+    forwards = models.CharField(verbose_name='Forward (Yes/No)', blank=True, null=True, max_length=50)
+    copies = models.CharField(verbose_name='Copy (Yes/No)', blank=True, null=True, max_length=50)
     filter_param = models.CharField(verbose_name='Forwarding to', blank=True, null=True, max_length=50)
+    enabled_forw = models.CharField(verbose_name='Enabled (Yes/No)', blank=True, null=True, max_length=10)
 
     class Meta:
         verbose_name = 'Переадресация'
         verbose_name_plural = 'Переадресации'
 
     def __str__(self):
-        return self.forward +' '+ self.info_email.login
+        lst=({'info_e':self.info_email_id, 'id_fw':self.id_fw, 'forward':self.forwards, 'copy':self.copies, 'filter_param':self.filter_param})
+        return str(self.info_email)
+
+class ExcludeEmail(models.Model):
+    user =  models.ForeignKey(User)
+    email_info = models.ManyToManyField(InfoEmail)
+
+    class Meta:
+        verbose_name = 'Список исключений'
+        verbose_name_plural = 'Список исключений'

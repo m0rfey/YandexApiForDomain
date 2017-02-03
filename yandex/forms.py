@@ -4,7 +4,7 @@ from django import forms
 from django.contrib.auth.models import User
 
 from .api_yandex import DOMAIN
-from .models import MailAdmin
+from .models import MailAdmin, ExcludeEmail
 
 
 class AddEmail(forms.Form):
@@ -21,9 +21,9 @@ class AddEmail(forms.Form):
         widget=forms.PasswordInput({'class': 'form-control','placeholder': 'Повторите пароль'}),
     )
     is_forward = forms.BooleanField(
-        label='Добавить пересылку',
+        label='Добавить переадресацию',
         required=False,
-        widget=forms.CheckboxInput({ 'onclick': 'return CheckForward(window.event)'}),
+        widget=forms.CheckboxInput(),#{ 'onclick': 'return CheckForward(window.event)'}
     )
     field = ['login', 'passw1', 'passw2', 'is_forward']
 
@@ -114,6 +114,14 @@ class EditUser(forms.Form):
         widget=forms.TextInput({'class':'form-control','placeholder': 'Секретный вопрос'})
     )
     hinta = forms.CharField(
+        required=True,
         label='',
         widget=forms.TextInput({'class':'form-control','placeholder': 'Ответ на секретный вопрос'})
+    )
+
+class AddExcludEmail(forms.Form):
+    email_info = forms.ModelChoiceField(
+        label='',
+        queryset=ExcludeEmail.objects.all().values('email_info'),
+        widget=forms.SelectMultiple({'row':'50'})
     )

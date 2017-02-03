@@ -2,14 +2,14 @@ from django.core.management.base import BaseCommand, CommandError
 from yandex.views import YandexUpdate
 
 class Command(BaseCommand):
-    help = 'Closes the specified poll for voting'
+    help = 'Update DB for Yandex API'
 
     # def update(self):
     #     return YandexUpdate.pars(self)
 
     def handle(self, *args, **options):
         YandexUpdate.pars(self)
-        self.stdout.write(self.style.SUCCESS('ohoh'))
+        self.stdout.write(self.style.SUCCESS('Update successful'))
 
     # def add_arguments(self, parser):
     #     parser.add_argument('poll_id', nargs='+', type=int)
